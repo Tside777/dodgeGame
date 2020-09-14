@@ -1,3 +1,13 @@
+h1 {
+    margin: auto;
+    text-align: center;
+}
+
+p {
+    margin: auto;
+    text-align: center;
+}
+
 #gameBoard {
         border-style:solid;
         border-width:1px;

@@ -61,10 +61,10 @@ var dodgeGame = function () {
 
     function updatewindowSize(event) {
         $('#gameBoard').css('height', $('#gameBoard').width()*.75+'px');
-        $('#player').css('width', $('#gameBoard').width()/25+'px');
-        $('#player').css('height', $('#gameBoard').width()/25+'px');
-        $('#pointDot').css('height', $('#gameBoard').width()/40+'px');
-        $('#pointDot').css('width', $('#gameBoard').width()/40+'px');
+        $('#player').css('width', $('#gameBoard').width()/50+'px');
+        $('#player').css('height', $('#gameBoard').width()/50+'px');
+        $('#pointDot').css('height', $('#gameBoard').width()/50+'px');
+        $('#pointDot').css('width', $('#gameBoard').width()/50+'px');
 
         self.options.speed = $('#gameBoard').width()/150
         self.options.maxX = $('#gameBoard').width();
@@ -84,6 +84,8 @@ var dodgeGame = function () {
             enemy.diameter = $('#gameBoard').width()/40;
             enemy.maxY = self.options.maxY - enemy.diameter;
             enemy.maxX = self.options.maxX - enemy.diameter;
+            enemy.maxSpeed = self.options.speed;
+            enemy.updateSpeed();
         }
         
     }
@@ -123,7 +125,7 @@ var dodgeGame = function () {
             enemy.move();
         }
 
-        if(self.state.score > 0 && self.state.score % 10 == 0 && self.state.enemyCount == Math.floor(self.state.score/10)) {
+        if(self.state.score > 0 && self.state.score % 7 == 0 && self.state.enemyCount == Math.floor(self.state.score/7)) {
             self.state.enemyCount++;
             self.state.enemyDots.push(new enemyDot('enemy'+self.state.enemyCount, self.options.maxY, self.options.maxX, self.options.speed));
             console.log(self.state.enemyDots);
@@ -236,7 +238,7 @@ var player = function (yPos, xPos, minY, maxY, minX, maxX) {
     this.maxY = maxY;
     this.minX = minX;
     this.maxX = maxX;
-    this.sideLength = $('#gameBoard').width()/25;
+    this.sideLength = $('#gameBoard').width()/50;
     $('#player').css({ 
         'width': this.sideLength+'px',
         'height': this.sideLength+'px'
@@ -282,7 +284,7 @@ var pointDot = function(maxY, maxX) {
     var self = this;
     this.maxY = maxY;
     this.maxX = maxX;
-    this.diameter = $('#gameBoard').width()/40;
+    this.diameter = $('#gameBoard').width()/50;
 
     this.xPos = Math.floor(Math.random() * (Math.floor(self.maxX) - self.diameter));
     this.yPos = Math.floor(Math.random() * (Math.floor(self.maxY) - self.diameter));
@@ -378,6 +380,17 @@ var pointDot = function(maxY, maxX) {
                 self.yPos = Math.floor(Math.random() * (Math.floor(self.maxY) - self.diameter));
                 self.xPos = Math.floor(Math.random() * (Math.floor(self.maxX) - self.diameter));
             }
+        }
+
+        this.updateSpeed = function () {
+            self.xVel = Math.floor(Math.random() * Math.floor(maxSpeed)) + 1;
+            if (self.xVel > 5) {
+                self.xVel -= 11
+            };
+            self.yVel = Math.floor(Math.random() * Math.floor(maxSpeed)) + 1;
+            if (self.yVel > 5) {
+                self.yVel -= 11
+            };
         }
 
         this.drawEnemy = function () {
