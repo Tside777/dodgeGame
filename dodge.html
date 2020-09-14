@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Dodge the bad stuff</title>
+        <link rel="stylesheet" href="style/dodge.css" type="text/css">
+        <script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
+        <script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+        <script type='text/javascript' src="scripts/dodge.js"></script>
+    </head>
+
+
+    <body>
+        <div class="Score">Score: <div class="OutputText" id="totalScore">0</div></div>
+        <div class="Score">Previous Best: <div class="OutputText" id="prevBest">0</div></div>  
+        <div id="gameBoard">
+            <div id="player"></div>
+            <div id="pointDot"></div>
+            <div id="enemyDots"></div>
+            <button id="playAgain">Play Again!</button>
+        </div>
+
+
+
+        <script type="text/javascript">
+            $(function(){
+               var dg=new dodgeGame(); 
+            });
+        </script>
+    </body>
+</html>
