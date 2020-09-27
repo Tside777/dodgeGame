@@ -1,28 +1,50 @@
-var dodgeGame = function () {
+var dodgeGame = function (username) {
+
+    var firebaseConfig = {
+        apiKey: "AIzaSyA6XcBrdTRlldJCTLS54HP0NpChvBHRz4E",
+        authDomain: "dodgegame-3834e.firebaseapp.com",
+        databaseURL: "https://dodgegame-3834e.firebaseio.com",
+        projectId: "dodgegame-3834e",
+        storageBucket: "dodgegame-3834e.appspot.com",
+        messagingSenderId: "161895663276",
+        appId: "1:161895663276:web:4a2059774d6b427f5b8109"
+      };
+     firebase.initializeApp(firebaseConfig);
+    
+     myDatabase = firebase.database();
+
+
 
     //Set player size and board height dynamically
+   
     $('#gameBoard').css('height', $('#gameBoard').width()*.75+'px');
+    $('#gameBoard').css('display', 'block');
+    
 
+    const FRAMERATE = 30;
 
     var self = this;
     this.options = {
         minY: 0,
         minX: 0,
-        maxY: $('#gameBoard').height() - $('#player').height(),
-        maxX: $('#gameBoard').width() - $('#player').width(),
+        maxY: $('#gameBoard').height(),
+        maxX: $('#gameBoard').width(),
         playerX: $('#gameBoard').width()/2 - $('#player').width(),
         playerY: $('#gameBoard').height()/2 -  $('#player').height(),
-        speed: $('#gameBoard').width()/150
+        speed: $('#gameBoard').width()/150,
+        myDatabase: firebase.database(),
+        username: username
     };
 
     this.state = {
         gameOver: false,
-        player: new player(self.options.playerY, self.options.playerX, self.options.minY, self.options.maxY, self.options.minX, self.options.maxX),
+        player: new player(self.options.playerY, self.options.playerX, self.options.maxY, self.options.maxX),
         pointDot: new pointDot(self.options.maxY, self.options.maxX),
         enemyDots: [new enemyDot('enemy1', self.options.maxY, self.options.maxX, self.options.speed)],
         enemyCount: 1,
         score: 0,
-        prevBest: 0,
+        highscore: 0,
+        scoreboard: [],
         pressedKeys: {
             left: false,
             right: false,
@@ -30,6 +52,18 @@ var dodgeGame = function () {
             down: false
         },
     }
+
+    myDatabase.ref('topten').once('value', ss => {
+        //console.log(ss.val());
+        self.state.scoreboard = ss.val();
+        self.state.scoreboard.sort((a, b) => (a.score < b.score) ? 1 : ((b.score < a.score) ? -1 : 0));
+        self.state.highscore = self.state.scoreboard[0].score;
+        //console.log(self.state.scoreboard);
+        //console.log(self.state.highscore);
+    });
+
+
+    
 
     this.keyMap = {
         68: 'right',
@@ -40,7 +74,7 @@ var dodgeGame = function () {
     
     
     //self.state.enemyDots.push(new enemyDot('enemy1', self.options.maxY, self.options.maxX));
-    console.log(self.state.enemyDots[0]);
+    //console.log(self.state.enemyDots[0]);
 
     //this.player = new player(self.state.playerY, self.state.playerX, self.options.minY, self.options.maxY, self.options.minX, self.options.maxX);
     //console.log(self.player);
@@ -70,8 +104,8 @@ var dodgeGame = function () {
         self.options.maxX = $('#gameBoard').width();
         self.options.maxY = $('#gameBoard').height();
 
-        self.state.player.sideLength = $('#gameBoard').width()/25;
-        self.state.pointDot.diameter = $('#gameBoard').width()/40;
+        self.state.player.sideLength = $('#gameBoard').width()/50;
+        self.state.pointDot.diameter = $('#gameBoard').width()/50;
 
         self.state.player.maxY = self.options.maxY - self.state.player.sideLength;
         self.state.player.maxX = self.options.maxX - self.state.player.sideLength;
@@ -108,32 +142,33 @@ var dodgeGame = function () {
 
     function update(progress) {
         // Update the state of the world for the elapsed time since last render
+        let speed = Math.round(self.options.speed * progress/16);
         if(self.state.pressedKeys.left) {
-            self.state.player.moveX(self.options.speed * -1);
+            self.state.player.moveX(speed * -1);
         }
         if(self.state.pressedKeys.right) {
-            self.state.player.moveX(self.options.speed);
+            self.state.player.moveX(speed);
         }
         if(self.state.pressedKeys.up) {
-            self.state.player.moveY(self.options.speed * -1);
+            self.state.player.moveY(speed * -1);
         }
         if(self.state.pressedKeys.down) {
-            self.state.player.moveY(self.options.speed);
+            self.state.player.moveY(speed);
         }
         
         for(let enemy of self.state.enemyDots){
-            enemy.move();
+            enemy.move(progress);
         }
 
         if(self.state.score > 0 && self.state.score % 7 == 0 && self.state.enemyCount == Math.floor(self.state.score/7)) {
             self.state.enemyCount++;
             self.state.enemyDots.push(new enemyDot('enemy'+self.state.enemyCount, self.options.maxY, self.options.maxX, self.options.speed));
-            console.log(self.state.enemyDots);
+            //console.log(self.state.enemyDots);
         }
         
         if(collision(self.state.player, self.state.pointDot)) {
             self.state.score = self.state.pointDot.collect(self.state.score);
-            console.log(self.state.score);
+            //console.log(self.state.score);
         }
 
         for(let enemy of self.state.enemyDots) {
@@ -147,7 +182,6 @@ var dodgeGame = function () {
     function draw() {
         // Draw the state of the world
         $('#player').css('top', self.state.player.yPos+'px');
-        console.log()
         $('#player').css('left', self.state.player.xPos+'px');
 
         for(let enemy of self.state.enemyDots){
@@ -155,7 +189,11 @@ var dodgeGame = function () {
         }
 
         $('#totalScore').text(self.state.score);
-        $('#prevBest').text(self.state.prevBest);
+        $('#highScore').text(self.state.highscore);
+        $('#scoreBoard').html('<h3>Top ten:</h3>');
+        for(let score of self.state.scoreboard) {
+            $('#scoreBoard').append(`<p>${score.username}: ${score.score}<p>`);
+        }
     }
 
     function loop(timestamp) {
@@ -166,7 +204,36 @@ var dodgeGame = function () {
         draw()
 
         if( self.state.gameOver == true ) {
-            console.log('Game Over!');
+            
+
+            myDatabase.ref('topten').once('value', ss => {
+                //console.log(ss.val());
+                self.state.scoreboard = ss.val();
+            });
+
+            self.state.scoreboard.sort((a, b) => (a.score < b.score) ? 1 : ((b.score < a.score) ? -1 : 0));
+            //console.log(self.state.scoreboard);
+
+            let newScore = {
+                score: self.state.score,
+                username: self.options.username
+            };
+
+            for (let i = 0; i < self.state.scoreboard.length; i++) {
+                if (newScore.score > self.state.scoreboard[i].score) {
+                    self.state.scoreboard.splice(i, 0, newScore);
+                    self.state.scoreboard.pop();
+                    break;
+                } 
+            }
+
+            //console.log(self.state.scoreboard);
+
+            myDatabase.ref('topten').set(self.state.scoreboard);
+
+            self.state.highscore = self.state.scoreboard[0].score;
+
+            //console.log('Game Over!');
             $('#playAgain').css('display', 'block');
             $('#playAgain').on('click', self.playAgain);
             return 0;
@@ -196,20 +263,21 @@ var dodgeGame = function () {
             maxX: $('#gameBoard').width() - $('#player').width(),
             playerX: $('#gameBoard').width()/2 - $('#player').width(),
             playerY: $('#gameBoard').height()/2 -  $('#player').height(),
-            speed: $('#gameBoard').width()/150
+            speed: $('#gameBoard').width()/150,
+            username: username
         };
 
-        let prevBest = self.state.prevBest
-        if (self.state.score > self.state.prevBest)
-            { prevBest = self.state.score } 
+        let highscore = self.state.highscore;
+        let scoreboard = self.state.scoreboard;
         self.state = {
             gameOver: false,
-            player: new player(self.options.playerY, self.options.playerX, self.options.minY, self.options.maxY, self.options.minX, self.options.maxX),
+            player: new player(self.options.playerY, self.options.playerX, self.options.maxY, self.options.maxX),
             pointDot: new pointDot(self.options.maxY, self.options.maxX),
             enemyDots: [new enemyDot('enemy1', self.options.maxY, self.options.maxX, self.options.speed)],
             enemyCount: 1,
             score: 0,
-            prevBest: prevBest,
+            highscore: highscore,
+            scoreboard: scoreboard,
             pressedKeys: {
                 left: false,
                 right: false,
@@ -218,7 +286,7 @@ var dodgeGame = function () {
             },
         }
 
-        console.log(self.state);
+        //console.log(self.state);
         lastRender = 0;
         myReq = window.requestAnimationFrame(loop);
     }
@@ -230,15 +298,17 @@ var dodgeGame = function () {
 
 
 
-var player = function (yPos, xPos, minY, maxY, minX, maxX) {
+var player = function (yPos, xPos, boardHeight, boardWidth) {
     var self = this;
     this.yPos = yPos;
     this.xPos = xPos;
-    this.minY = minY;
-    this.maxY = maxY;
-    this.minX = minX;
-    this.maxX = maxX;
+    this.minY = 0;
+    this.minX = 0;
+
     this.sideLength = $('#gameBoard').width()/50;
+
+    this.maxY = boardHeight - this.sideLength;
+    this.maxX = boardWidth - this.sideLength;
     $('#player').css({ 
         'width': this.sideLength+'px',
         'height': this.sideLength+'px'
@@ -280,11 +350,12 @@ var player = function (yPos, xPos, minY, maxY, minX, maxX) {
 
 
 
-var pointDot = function(maxY, maxX) {
+var pointDot = function(boardHeight, boardWidth) {
     var self = this;
-    this.maxY = maxY;
-    this.maxX = maxX;
+
     this.diameter = $('#gameBoard').width()/50;
+    this.maxY = boardHeight - self.diameter;
+    this.maxX = boardWidth - self.diameter;
 
     this.xPos = Math.floor(Math.random() * (Math.floor(self.maxX) - self.diameter));
     this.yPos = Math.floor(Math.random() * (Math.floor(self.maxY) - self.diameter));
@@ -298,7 +369,7 @@ var pointDot = function(maxY, maxX) {
     this.replace = function() {
         let prevY = self.yPos;
         let prevX = self.xPos;
-        console.log(self.maxX, self.maxY);
+        //console.log(self.maxX, self.maxY);
         while( self.xPos == prevX && self.yPos == prevY){
             self.yPos = Math.floor(Math.random() * (Math.floor(self.maxY) - self.diameter));
             self.xPos = Math.floor(Math.random() * (Math.floor(self.maxX) - self.diameter));
@@ -319,13 +390,14 @@ var pointDot = function(maxY, maxX) {
     var enemyDot = function (name, maxY, maxX, maxSpeed) {
         var self = this;
         this.name = name;
-        this.maxY = maxY;
-        this.maxX = maxX;
         this.diameter = $('#gameBoard').width() / 40;
+        this.maxY = maxY - self.diameter;
+        this.maxX = maxX - self.diameter;
 
         this.xPos = Math.floor(Math.random() * (Math.floor(self.maxX) - self.diameter));
         this.yPos = Math.floor(Math.random() * (Math.floor(self.maxY) - self.diameter));
 
+        this.maxSpeed = maxSpeed
 
         //random vel between -5 and 5, should exclude 0
         this.xVel = Math.floor(Math.random() * Math.floor(maxSpeed)) + 1;
@@ -339,43 +411,43 @@ var pointDot = function(maxY, maxX) {
 
         $(`#gameBoard`).append(`<div id="${self.name}"></div>`);
 
-        this.moveY = function () {
+        this.moveY = function (p) {
             if (self.yPos < 0) {
                 self.yPos = 0;
                 self.yVel *= -1
-                self.yPos += self.yVel;
+                self.yPos += Math.round(self.yVel * p/16);
             } else if (self.yPos > self.maxY) {
                 self.yPos = self.maxY;
                 self.yVel *= -1;
-                self.yPos += self.yVel;
+                self.yPos += Math.round(self.yVel * p/16);
             } else {
-                self.yPos += self.yVel;
+                self.yPos += Math.round(self.yVel * p/16);
             }
         }
 
-        this.moveX = function () {
+        this.moveX = function (p) {
             if (self.xPos < 0) {
                 self.xPos = 0;
                 self.xVel *= -1
-                self.xPos += self.xVel;
+                self.xPos += Math.round(self.xVel * p/16);
             } else if (self.xPos > self.maxX) {
                 self.xPos = self.maxX;
                 self.xVel *= -1;
-                self.xPos += self.xVel;
+                self.xPos += Math.round(self.xVel * p/16);
             } else {
-                self.xPos += self.xVel;
+                self.xPos += Math.round(self.xVel * p/16);
             }
         }
 
-        this.move = function () {
-            self.moveY();
-            self.moveX();
+        this.move = function (progress) {
+            self.moveY(progress);
+            self.moveX(progress);
         }
 
         this.replace = function () {
             let prevY = self.yPos;
             let prevX = self.xPos;
-            console.log(self.maxX, self.maxY);
+            //console.log(self.maxX, self.maxY);
             while (self.xPos == prevX && self.yPos == prevY) {
                 self.yPos = Math.floor(Math.random() * (Math.floor(self.maxY) - self.diameter));
                 self.xPos = Math.floor(Math.random() * (Math.floor(self.maxX) - self.diameter));
@@ -383,11 +455,11 @@ var pointDot = function(maxY, maxX) {
         }
 
         this.updateSpeed = function () {
-            self.xVel = Math.floor(Math.random() * Math.floor(maxSpeed)) + 1;
+            self.xVel = Math.floor(Math.random() * Math.floor(self.maxSpeed)) + 1;
             if (self.xVel > 5) {
                 self.xVel -= 11
             };
-            self.yVel = Math.floor(Math.random() * Math.floor(maxSpeed)) + 1;
+            self.yVel = Math.floor(Math.random() * Math.floor(self.maxSpeed)) + 1;
             if (self.yVel > 5) {
                 self.yVel -= 11
             };
