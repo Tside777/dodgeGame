@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Dodge the bad stuff</title>
+        <link rel="stylesheet" href="dodge.css" type="text/css">
+        <script src="https://www.gstatic.com/firebasejs/7.21.1/firebase-app.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/7.21.1/firebase-auth.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/7.21.1/firebase-database.js"></script>
+        <script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
+        <script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+        <script type='text/javascript' src="menu.js"></script>
+        <script type='text/javascript' src="dodge.js"></script>
+    </head>
+
+
+    <body>
+        <h1>Dodge Game!</h1>
+        <p>WASD to move. Dodge the red dots, collect the black dots.</p>
+        <div class="Score">Score: <div class="OutputText" id="totalScore">0</div></div>
+        <div class="Score">High Score: <div class="OutputText" id="highScore">0</div></div>
+        <div id="yourName"></div>
+        <div id='menu'>
+            <form>
+                <!-- <label for="username">Enter a name:</label><br>
+                <input type="text" id="username" maxlength="18"><br><br> -->
+                <input type="button" id="startGame" value="Click to Play!">
+            </form>
+        </div>
+        <div id="gameBoard">
+            <div id="player"></div>
+            <div id="pointDot"></div>
+            <div id="enemyDots"></div>
+            <button id="playAgain">Play Again!</button>
+        </div>
+        <div id="scoreBoard" class="Score">Top 10:</div>
+
+
+        <script type="text/javascript">
+            $(function(){
+               var dg=new menu(); 
+            });
+        </script>
+    </body>
+</html>
