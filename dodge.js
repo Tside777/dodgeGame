@@ -54,7 +54,7 @@ var dodgeGame = function (username) {
     }
 
     myDatabase.ref('topten').on('value', ss => {
-        console.log(ss.val());
+        //console.log(ss.val());
         self.state.scoreboard = ss.val();
         self.state.scoreboard.sort((a, b) => (a.score < b.score) ? 1 : ((b.score < a.score) ? -1 : 0));
         self.state.highscore = self.state.scoreboard[0].score;
@@ -205,12 +205,12 @@ var dodgeGame = function (username) {
 
         if( self.state.gameOver == true ) {
              myDatabase.ref('topten').on('value', ss => {
-                console.log(ss.val());
+                //console.log(ss.val());
                 self.state.scoreboard = ss.val();
             }); 
 
             //self.state.scoreboard.sort((a, b) => (a.score < b.score) ? 1 : ((b.score < a.score) ? -1 : 0));
-            console.log(self.state.scoreboard);
+            //console.log(self.state.scoreboard);
 
             let newScore = {
                 score: self.state.score,
