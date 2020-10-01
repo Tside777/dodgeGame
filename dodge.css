@@ -40,6 +40,17 @@ p {
     text-align: center;
 }
 
+#yourName {
+    margin: auto;
+    width: 50%;
+    text-align: center;
+}
+
+#logout {
+    margin: auto;
+    display: none;
+}
+
 #totalScore {
     display: inline-block;
 }

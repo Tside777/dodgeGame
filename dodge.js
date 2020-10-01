@@ -1,15 +1,5 @@
 var dodgeGame = function (username) {
 
-    var firebaseConfig = {
-        apiKey: "AIzaSyA6XcBrdTRlldJCTLS54HP0NpChvBHRz4E",
-        authDomain: "dodgegame-3834e.firebaseapp.com",
-        databaseURL: "https://dodgegame-3834e.firebaseio.com",
-        projectId: "dodgegame-3834e",
-        storageBucket: "dodgegame-3834e.appspot.com",
-        messagingSenderId: "161895663276",
-        appId: "1:161895663276:web:4a2059774d6b427f5b8109"
-      };
-     firebase.initializeApp(firebaseConfig);
     
      myDatabase = firebase.database();
 
