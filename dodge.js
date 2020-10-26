@@ -182,7 +182,8 @@ var dodgeGame = function (username) {
         $('#highScore').text(self.state.highscore);
         $('#scoreBoard').html('<h3>Top ten:</h3>');
         for(let score of self.state.scoreboard) {
-            $('#scoreBoard').append(`<p>${score.username}: ${score.score}<p>`);
+            $('#scoreBoard').append(document.createTextNode(score.username + ': ' + score.score));
+            $('#scoreBoard').append(document.createElement('br'));
         }
     }
 
@@ -222,7 +223,8 @@ var dodgeGame = function (username) {
             self.state.highscore = self.state.scoreboard[0].score;
             $('#scoreBoard').html('<h3>Top ten:</h3>');
             for(let score of self.state.scoreboard) {
-                $('#scoreBoard').append(`<p>${score.username}: ${score.score}<p>`);
+                $('#scoreBoard').append(document.createTextNode(score.username + ': ' + score.score));
+                $('#scoreBoard').append(document.createElement('br'));
             }
             //console.log('Game Over!');
             $('#playAgain').css('display', 'block');
